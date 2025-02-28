@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscribe to Download</title>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #2f2f2f; /* Dark gray background */
+            color: white;
+        }
+        .container {
+            padding: 20px;
+        }
+        h1 {
+            color: #ff0000;
+            font-weight: bold; /* Bold red text */
+        }
+        p {
+            font-size: 18px;
+        }
+        button {
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+        .download-section {
+            display: none;
+            margin-top: 30px;
+        }
+        .warning {
+            color: yellow;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>To Download:</h1>
+        <p><strong>1st: Subscribe</strong></p>
+        <p><strong>2nd: Like the video</strong></p>
+        <p><strong>Then, you can download.</strong></p>
+        
+        <a href="https://www.youtube.com/channel/UCX1Nb8MR3n27KP-OTF_1hQw" target="_blank">
+            <button>Subscribe to My YouTube Channel</button>
+        </a>
+
+        <div class="download-section" id="download-section">
+            <h2>Thank you for subscribing!</h2>
+            <p>You can now download the file:</p>
+            <a href="javascript:void(0);" id="download-script-btn">
+                <button>Download the script</button>
+            </a>
+            
+            <!-- Additional Text for when download doesn't work -->
+            <p>If download doesn't work:</p>
+            <p class="warning"><strong>Make sure you have hit the subscribe else this will not work, or the file might have been removed by Google Roblox.</strong></p>
+            <p class="warning"><strong>So hurry!! Always look for my new video update before it will not work.</strong></p>
+        </div>
+
+  
+    </div>
+
+    <script>
+        // Your API Key and Client ID from Google Cloud Console
+        const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'; // Replace with your Client ID
+        const API_KEY = 'YOUR_GOOGLE_API_KEY'; // Replace with your API Key
+        const CHANNEL_ID = 'UCX1Nb8MR3n27KP-OTF_1hQw'; // Your YouTube Channel ID
+
+        let auth2; // Google Auth object
+        let isSubscribed = false;
+
+        // Load the API client
+        function loadClient() {
+            gapi.client.setApiKey(API_KEY);
+            return gapi.client.load('https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest')
+                .then(() => {
+                    console.log('YouTube API client loaded');
+                }, (err) => {
+                    console.error('Error loading YouTube API client:', err);
+                });
+        }
+
+        // Initialize the Google API client and sign-in button
+        function init() {
+            gapi.auth2.init({
+                client_id: CLIENT_ID,
+            }).then(() => {
+                auth2 = gapi.auth2.getAuthInstance();
+                if (auth2.isSignedIn.get()) {
+                    checkSubscription();
+                }
+            });
+        }
+
+        // Check if the user is subscribed to the channel
+        function checkSubscription() {
+            const request = gapi.client.youtube.subscriptions.list({
+                part: 'snippet',
+                mine: true,
+                maxResults: 1
+            });
+
+            request.execute(function(response) {
+                if (response.items) {
+                    const subscriptions = response.items;
+                    for (let subscription of subscriptions) {
+                        if (subscription.snippet.resourceId.channelId === CHANNEL_ID) {
+                            isSubscribed = true;
+                            document.getElementById("download-section").style.display = "block";
+                            alert('You are subscribed!');
+                            return;
+                        }
+                    }
+                }
+                alert('You are not subscribed!');
+            });
+        }
+
+        // Sign-in button event handler
+        function signIn() {
+            auth2.signIn().then(() => {
+                checkSubscription();
+                document.getElementById("sign-in").style.display = "none";
+                document.getElementById("sign-out").style.display = "inline-block";
+            });
+        }
+
+        // Sign-out event handler
+        function signOut() {
+            auth2.signOut().then(() => {
+                alert('You are signed out!');
+                document.getElementById("sign-in").style.display = "inline-block";
+                document.getElementById("sign-out").style.display = "none";
+                document.getElementById("download-section").style.display = "none";
+            });
+        }
+
+        // When user clicks on 'Download the script'
+        document.getElementById("download-script-btn").addEventListener("click", function() {
+            window.location.href = 'landing_page.html'; // Redirect to the landing page
+        });
+
+        // Load the API client and authenticate when the page is loaded
+        gapi.load('client:auth2', init);
+    </script>
+</body>
+</html>
